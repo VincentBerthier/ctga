@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# Custom
+GPATH
+GRTAGS
+GTAGS
+*~
+*#
+/build*
+*CMakeFiles*
