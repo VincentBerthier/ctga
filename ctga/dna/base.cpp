@@ -47,6 +47,27 @@
 namespace ctga {
 namespace dna {
 
+Base complement(const Base& b) {
+  switch (b) {
+    case Base::A: {
+      return Base::G;
+      break;
+    }
+    case Base::G: {
+      return Base::A;
+      break;
+    }
+    case Base::C: {
+      return Base::T;
+      break;
+    }
+    case Base::T: {
+      return Base::C;
+      break;
+    }
+  }
+}
+
 std::ostream& operator<<(std::ostream& os, const Base& b) {
   switch (b) {
     case Base::A: {

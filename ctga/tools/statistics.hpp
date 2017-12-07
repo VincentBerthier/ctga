@@ -1,11 +1,11 @@
-// base.hpp ---
+// statistics.hpp ---
 //
-// Filename: base.hpp
+// Filename: statistics.hpp
 // Description:
 // Author: Vincent Berthier
 // Maintainer:
 // Copyright 2018 <Vincent Berthier>
-// Created: 2017-12-06T06:48:23+0000
+// Created: 2017-12-07T03:47:30+0000
 // Version:
 // Last-Updated:
 //           By:
@@ -40,46 +40,36 @@
 
 // Code:
 
+#ifndef CTGA_TOOLS_STATISTICS_HPP_
+#define CTGA_TOOLS_STATISTICS_HPP_
 
-#ifndef CTGA_DNA_BASE_HPP_
-#define CTGA_DNA_BASE_HPP_
+#include <gsl/gsl_statistics.h>
 
-#include <algorithm>
-#include <iterator>
-#include <iostream>
-#include <string>
+#include <map>
+#include <numeric>
+#include <utility>
 #include <vector>
 
-/** \namespace gfd
- * Main namespace of the application
- */
-
-/** \namespace gfd::tools::dna
- * Contains all the tools relating to the DNA itself
- */
-
 namespace ctga {
-namespace dna {
-/** \brief Enumeration of the different type of bases found in DNA */
-enum class Base {
-  A = 1, /*!< Adenine */
-  C = 2, /*!< Cytosine */
-  G = 3, /*!< Guanine */
-  T = 4 /*!< Thymine */
-};
+namespace tools {
+namespace statistics {
 
-Base complement(const Base& b);
+double mean(const std::vector<double>& vec);
 
-/** \brief Write a Base into a stream */
-std::ostream& operator<<(std::ostream& os, const Base& b);
-/** \brief Read a base from a stream */
-std::istream& operator>>(std::istream& is, Base& b);
+double standard_deviation(const std::vector<double>& vec);
 
-}  // namespace dna
+std::pair<double, double> mean_std(const std::vector<double>& vec);
+
+double dist_kurtosis(double val, const std::vector<double>& vec);
+
+double thinness(double val, const std::vector<double> &vec);
+
+}  // namespace statistics
+}  // namespace tools
 }  // namespace ctga
 
+#endif  // CTGA_TOOLS_STATISTICS_HPP_
 
-#endif  // CTGA_DNA_BASE_HPP_
 
 //
-// base.hpp ends here
+// statistics.hpp ends here

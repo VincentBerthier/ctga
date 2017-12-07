@@ -1,11 +1,11 @@
-// parser.cpp ---
+// individual.hpp ---
 //
-// Filename: parser.cpp
+// Filename: individual.hpp
 // Description:
 // Author: Vincent Berthier
 // Maintainer:
 // Copyright 2018 <Vincent Berthier>
-// Created: 2017-12-05T07:24:17+0000
+// Created: 2017-12-06T08:44:10+0000
 // Version:
 // Last-Updated:
 //           By:
@@ -40,40 +40,38 @@
 
 // Code:
 
+#ifndef CTGA_GFD_INDIVIDUAL_HPP_
+#define CTGA_GFD_INDIVIDUAL_HPP_
 
-#include "ctga/tools/parser.hpp"
-
-#include <fstream>
 #include <iostream>
-#include <string>
 #include <vector>
 
-#include "ctga/dna/sequence.hpp"
-
 namespace ctga {
-namespace tools {
-namespace parser {
+namespace gfd {
+
+class Individual {
+ public:
+  explicit Individual(unsigned pos, unsigned parent = 0) :
+      position_{pos},
+      parent_{parent} {}
+  inline unsigned position() const { return position_; }
+
+  friend std::ostream& operator<<(std::ostream& os, const Individual& i);
+
+ private:
+  unsigned position_;
+  unsigned parent_;
+  bool survived_{true};
+  double fitness_{};
+  std::vector<double> mw_orig_{};
+  std::vector<double> mw_shuf_{};
+};
 
 
-using std::string;
-using std::vector;
-
-std::vector<dna::Sequence> read_file(std::string path) {
-  std::vector<dna::Sequence> res{};
-  string data{};
-  std::ifstream input{path};
-  if (input.is_open()) {
-    while (getline(input, data)) {
-      if (data[0] != '>') res.push_back(dna::Sequence{data});
-    }
-  }
-  input.close();
-  return res;
-}
-
-}  // namespace parser
-}  // namespace tools
+}  // namespace gfd
 }  // namespace ctga
 
+#endif  // CTGA_GFD_INDIVIDUAL_HPP_
+
 //
-// parser.cpp ends here
+// individual.hpp ends here

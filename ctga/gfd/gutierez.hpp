@@ -44,32 +44,71 @@
 #ifndef CTGA_GFD_GUTIEREZ_HPP_
 #define CTGA_GFD_GUTIEREZ_HPP_
 
+#include <unordered_set>
 #include <vector>
 
 #include "ctga/dna/sequence.hpp"
+#include "ctga/gfd/individual.hpp"
 
 namespace ctga {
 namespace gfd {
 
 
 class Gutierez {
- private:
-  unsigned sub_size_;
-  std::vector<dna::Sequence> original_;
-  dna::Sequence super_;
-  std::vector<dna::Sequence> subs_;
-
  public:
+  /**
+   *  \brief Initialises a Genetic Algorithm for motif finding
+
+   *  \param size Size of the submotifs
+   *  \param seqs Sequences of DNA to analyse
+   */
   Gutierez(unsigned size, const std::vector<dna::Sequence>& seqs) :
       sub_size_{size},
       original_{seqs},
+      shuffled_{},
       super_{""},
       subs_{}
   {}
 
-  std::vector<dna::Sequence> get_subs() const { return subs_; }
-
+  /**
+   *  \brief Reinitialises the random sequences
+   */
   void refresh();
+
+  /**
+   *  \brief Check that the current position is valid
+
+   *  \param position
+   *  \return True if the position is valid, False otherwise
+   */
+  bool is_valid_position(unsigned pos) const;
+
+  /**
+   *  \brief Check that the current position is unique
+   *
+   *  \param pos
+   *  \return True if the position is unused, False otherwise
+   */
+  inline bool is_unique(unsigned pos) const {
+    return taken_.find(pos) == taken_.end();
+  }
+
+  /**
+   *  \brief Initialises a population
+   *
+   *  \param pop_size Number of individuals in the population
+   */
+  void init_population(unsigned pop_size);
+
+ private:
+  unsigned sub_size_;
+  std::vector<dna::Sequence> original_;
+  std::vector<dna::Sequence> shuffled_;
+  dna::Sequence super_;
+  std::vector<dna::Sequence> subs_;
+
+  std::vector<Individual> pop_{};
+  std::unordered_set<unsigned> taken_{};
 };
 
 

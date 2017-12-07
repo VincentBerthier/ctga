@@ -43,6 +43,7 @@
 #include "ctga/dna/sequence.hpp"
 
 #include <assert.h>
+#include <algorithm>
 #include <cmath>
 #include <string>
 #include <sstream>
@@ -88,7 +89,7 @@ Sequence::Sequence(std::vector<Sequence> vec) : bases_{} {
   for (auto seq : vec) append(seq);
 }
 
-Sequence Sequence::subsequence(unsigned start, unsigned stop) {
+Sequence Sequence::subsequence(unsigned start, unsigned stop) const {
   assert(start >= 0);
   assert(start < stop);
 
@@ -110,6 +111,13 @@ std::string Sequence::to_string() const {
   std::stringstream ss{};
   ss << *this;
   return ss.str();
+}
+
+Sequence Sequence::complement() const {
+  std::vector<Base> comp{};
+  for (const auto& b : bases_)
+    comp.push_back(dna::complement(b));
+  return Sequence{comp};
 }
 
 Sequence::operator std::vector<double>() const {
@@ -155,6 +163,29 @@ std::ostream& operator<<(std::ostream& os, const Sequence& s) {
             s.bases_.end(),
             std::ostream_iterator<Base>{os, ""});
   return os;
+}
+
+unsigned count_similar_main(const Sequence& base, const Sequence& motif,
+                            double tol, unsigned width) {
+  unsigned res{};
+  unsigned tolerance = ceil(width * tol);
+  for (auto i = 0U; i < base.size() - width; ++i) {
+    unsigned diff{};
+    auto seq = base.subsequence(i, i + width);
+    unsigned j{};
+    while (diff <= tolerance && j < width) {
+      if (base[i + j] != motif[j]) diff++;
+      j++;
+    }
+    if (diff <= tolerance) res++;
+  }
+  return res;
+}
+
+unsigned count_similar(const Sequence& base, const Sequence& motif,
+                       double tolerance, unsigned width) {
+  return count_similar_main(base, motif, tolerance, width)
+      + count_similar_main(base, motif.complement(), tolerance, width);
 }
 
 

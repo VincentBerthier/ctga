@@ -75,7 +75,7 @@ endif(COMPILER_SUPPORTS_CXX11)
 
 # Set general compilation flags
 #set(GENERAL_FLAGS "-Wall -Wno-deprecated")
-set(GENERAL_FLAGS "-Wall -Wno-deprecated -fno-omit-frame-pointer -Wno-deprecated-declarations")
+set(GENERAL_FLAGS "-pedantic -Wall -Wno-deprecated -fno-omit-frame-pointer -Wno-deprecated-declarations")
 set(DEBUG_FLAGS "-g")
 set(RELEASE_FLAGS "-O3")
 set(LINKER_FLAGS "-Wl,--no-as-needed")
@@ -137,10 +137,15 @@ message(STATUS "CMAKE_MODULE_LINKER_FLAGS=${CMAKE_MODULE_LINKER_FLAGS}")
 ##                     Libraries                         ##
 ###########################################################
 
+# GNU Scientific Library
+find_package(GSL REQUIRED)
+include_directories(${GSL_INCLUDE_DIRS})
+
+# Eigen 3
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-# Looking for boost libraries
+# Boost
 set(Boost_USE_MULTITHREADED TRUE)
 find_package(Boost REQUIRED COMPONENTS system thread log filesystem date_time regex program_options)
 include_directories(${Boost_INCLUDE_DIRS})
@@ -161,7 +166,7 @@ get_property(DEFINITIONS_VALUES GLOBAL PROPERTY DEFINITIONS)
 add_definitions(${DEFINITIONS_VALUES})
 
 add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} pthread rt)
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${GSL_LIBRARIES} pthread rt)
 
 # Multi-threaded binary
 add_executable(${EXEC_NAME} "ctga/main.cpp" ${HEADERS})

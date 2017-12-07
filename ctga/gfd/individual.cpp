@@ -1,11 +1,11 @@
-// base.hpp ---
+// individual.cpp ---
 //
-// Filename: base.hpp
+// Filename: individual.cpp
 // Description:
 // Author: Vincent Berthier
 // Maintainer:
 // Copyright 2018 <Vincent Berthier>
-// Created: 2017-12-06T06:48:23+0000
+// Created: 2017-12-06T09:30:37+0000
 // Version:
 // Last-Updated:
 //           By:
@@ -40,46 +40,26 @@
 
 // Code:
 
+#include "ctga/gfd/individual.hpp"
 
-#ifndef CTGA_DNA_BASE_HPP_
-#define CTGA_DNA_BASE_HPP_
-
-#include <algorithm>
-#include <iterator>
 #include <iostream>
-#include <string>
 #include <vector>
 
-/** \namespace gfd
- * Main namespace of the application
- */
-
-/** \namespace gfd::tools::dna
- * Contains all the tools relating to the DNA itself
- */
-
 namespace ctga {
-namespace dna {
-/** \brief Enumeration of the different type of bases found in DNA */
-enum class Base {
-  A = 1, /*!< Adenine */
-  C = 2, /*!< Cytosine */
-  G = 3, /*!< Guanine */
-  T = 4 /*!< Thymine */
-};
+namespace gfd {
 
-Base complement(const Base& b);
+std::ostream& operator<<(std::ostream& os, const Individual& i)
+{
+  os << "Position: " << i.position_ << std::endl
+     << "Parent: " << i.parent_ << std::endl
+     << "Survived: " << i.survived_ << std::endl
+     << "Fitness: " << i.fitness_;
+  return os;
+}
 
-/** \brief Write a Base into a stream */
-std::ostream& operator<<(std::ostream& os, const Base& b);
-/** \brief Read a base from a stream */
-std::istream& operator>>(std::istream& is, Base& b);
-
-}  // namespace dna
+}  // namespace gfd
 }  // namespace ctga
 
 
-#endif  // CTGA_DNA_BASE_HPP_
-
 //
-// base.hpp ends here
+// individual.cpp ends here

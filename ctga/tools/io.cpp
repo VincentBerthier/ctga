@@ -1,11 +1,11 @@
-// parser.hpp ---
+// io.cpp ---
 //
-// Filename: parser.hpp
+// Filename: io.cpp
 // Description:
 // Author: Vincent Berthier
 // Maintainer:
 // Copyright 2018 <Vincent Berthier>
-// Created: 2017-12-05T07:25:09+0000
+// Created: 2017-12-05T07:24:17+0000
 // Version:
 // Last-Updated:
 //           By:
@@ -41,37 +41,39 @@
 // Code:
 
 
-#ifndef CTGA_TOOLS_PARSER_HPP_
-#define CTGA_TOOLS_PARSER_HPP_
+#include "ctga/tools/io.hpp"
 
+#include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
 #include "ctga/dna/sequence.hpp"
 
-/** \namespace gfd::tools::parser
- * Handles all operation related to files reading
- */
-
 namespace ctga {
 namespace tools {
-namespace parser {
-
-/**
- *  \brief Reads a fasta formated file and gets the sequences it contains.
- *
- *  Reads a file under the fasta format, collects the sequences it contains.
- *
- *  \param path Path to the file to read
- *  \return Vector of DNA sequences
- */
-std::vector<dna::Sequence> read_file(std::string path);
+namespace io {
 
 
-}  // namespace parser
+using std::string;
+using std::vector;
+
+std::vector<dna::Sequence> read_file(std::string path) {
+  std::vector<dna::Sequence> res{};
+  string data{};
+  std::ifstream input{path};
+  if (input.is_open()) {
+    while (getline(input, data)) {
+      if (data[0] != '>') res.push_back(dna::Sequence{data});
+    }
+  }
+  input.close();
+  return res;
+}
+
+}  // namespace io
 }  // namespace tools
 }  // namespace ctga
-#endif  // CTGA_TOOLS_PARSER_HPP__
 
 //
-// parser.hpp ends here
+// parser.cpp ends here

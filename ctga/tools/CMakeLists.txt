@@ -1,11 +1,15 @@
 SET(tools_src
   random_generator.cpp
-  parser.cpp
+  io.cpp
+  statistics.cpp
+  mann_whitney.cpp
   )
 
 SET(tools_hpp
   random_generator.hpp
-  parser.hpp
+  io.hpp
+  statistics.hpp
+  mann_whitney.hpp
   )
 
 SET(tools_files ${tools_src} ${tools_hpp} )

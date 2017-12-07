@@ -56,8 +56,6 @@ namespace dna {
 
 /** \brief Class defining a strand of DNA */
 class Sequence {
- private:
-  std::vector<Base> bases_; /*!< list of bases in the sequence */
  public:
   /**
    *  \brief Sequence constructor
@@ -96,6 +94,14 @@ class Sequence {
   explicit Sequence(std::vector<Sequence> vec);
 
   /**
+   *  \brief Get the base at a given position
+   *
+   *  \param i Base position
+   *  \return Base at the position looked at
+   */
+  inline Base operator[](unsigned i) const { return bases_[i]; }
+
+  /**
    *  \brief Get the number of bases in the sequence
    *
    *  \return return Number of bases in the sequence
@@ -116,7 +122,7 @@ class Sequence {
    *  \param stop Index of the last base to retrieve (excluded)
    *  \return return type
    */
-  Sequence subsequence(unsigned start, unsigned stop);
+  Sequence subsequence(unsigned start, unsigned stop) const;
 
   /**
    *  \brief Convert the DNA strand to a string representation
@@ -124,6 +130,13 @@ class Sequence {
    *  \return String representation of the DNA sequence
    */
   std::string to_string() const;
+
+  /**
+   *  \brief Get the complement of the sequence
+   *
+   *  \return Sequence complement
+   */
+  Sequence complement() const;
 
   /**
    *  \brief Convert the DNA sequence to a vector of doubles
@@ -135,7 +148,19 @@ class Sequence {
   friend std::ostream& operator<<(std::ostream& os, const Sequence& s);
   /** \brief Read a sequence from a stream */
   friend std::istream& operator>>(std::istream& is, Sequence& s);
+
+ private:
+  std::vector<Base> bases_; /*!< list of bases in the sequence */
 };
+
+unsigned count_similar(const Sequence& base, const Sequence& motif,
+                       double tolerance, unsigned width);
+
+unsigned count_similar(const Sequence &base, const Sequence& motif,
+                       double tolerance) {
+  return count_similar(base, motif, tolerance, motif.size());
+}
+
 }  // namespace dna
 }  // namespace ctga
 

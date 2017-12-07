@@ -1,7 +1,9 @@
 SET(gfd_src
+  individual.cpp
   gutierez.cpp)
 
 SET(gfd_hpp
+  individual.hpp
   gutierez.hpp)
 
 SET(gfd_files ${gfd_src} ${gfd_hpp})

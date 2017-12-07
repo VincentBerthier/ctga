@@ -45,9 +45,11 @@
 #include <iostream>
 #include <vector>
 
-#include "gfd/gutierez.hpp"
-#include "tools/parser.hpp"
-#include "tools/random_generator.hpp"
+#include "ctga/gfd/gutierez.hpp"
+#include "ctga/tools/io.hpp"
+#include "ctga/tools/random_generator.hpp"
+#include "ctga/tools/mann_whitney.hpp"
+#include "ctga/tools/statistics.hpp"
 
 using std::cout;
 using std::endl;
@@ -57,7 +59,7 @@ int main(int, char**) {
   // initialize random generation
   ctga::tools::RandomGenerator::get();
 
-  auto data = ctga::tools::parser::read_file("example.fasta");
+  auto data = ctga::tools::io::read_file("../data/example.fasta");
   ctga::dna::Sequence full{data};
 
   cout << "Sequence read: " << full << endl;
@@ -68,10 +70,18 @@ int main(int, char**) {
 
   ctga::gfd::Gutierez gut{300, data};
   gut.refresh();
+  gut.init_population(10);
 
-  ctga::dna::Sequence random{gut.get_subs()};
+  vector<double> test1{3, 4, 2, 6, 2, 5};
+  vector<double> test2{9, 7, 5, 10, 6, 8};
 
-  cout << "Random permutation: " << random << endl;
+  ctga::tools::statistics::MannWhitney mw{test1, test2};
+
+  cout << "P-value: " << mw() << endl;
+
+
+
+
 
   return 0;
 }

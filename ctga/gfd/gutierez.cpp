@@ -60,6 +60,35 @@ void Gutierez::refresh() {
   for (auto i = 0U; i < super_.size(); i += sub_size_)
     subs_.push_back(super_.subsequence(i, i + sub_size_));
 }
+
+bool Gutierez::is_valid_position(unsigned int pos) const {
+  bool res{true};
+  unsigned shift{};
+
+  for (auto s : shuffled_) {
+    shift += s.size();
+    if ((pos < shift) && (pos + sub_size_ > shift))
+      res = false;
+  }
+  return res;
+}
+
+void Gutierez::init_population(unsigned int pop_size) {
+  auto gen = tools::RandomGenerator::get();
+  for (auto i = 0U; i < pop_size; ++i) {
+    bool is_ok{false};
+    unsigned pos{};
+    while (!is_ok) {
+      pos = gen->uniform(super_.size());
+      auto valid = is_valid_position(pos);
+      auto unique = is_unique(pos);
+      is_ok = valid && unique;
+    }
+    taken_.emplace(pos);
+    pop_.push_back(Individual{pos});
+    std::cout << pop_.back() << std::endl;
+  }
+}
 }  // namespace gfd
 }  // namespace ctga
 
