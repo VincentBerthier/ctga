@@ -79,8 +79,23 @@ int main(int, char**) {
 
   cout << "P-value: " << mw() << endl;
 
+  ctga::dna::Sequence
+      seq{"GTCTTAAATGTGACCGCGTCTTCCCCATTGCTCGAGCTGGAGATGCTTTTCCTCAGTCCCTCACTGTGGTGGTAGGAGGGGCTGTTGTGCCACCATCCACAGCTATTCTTCCATGTGGTTAGAGAAGCTGAGAAATAACGAGAGTTTCCGTTCCATGGCAAGGAATGGGTTTGGAGTGTTTATTCACAGAACGGTTCTCATGAGATGGGACCAGCTAAGAATAGCCCTGGGTTGACACTGTCCTACCTCCTCCTGCTCATAAGAGAAACTACTTCCCCACAAGAAGAAAGAATAGGTCACGAGTTGAGAGCTGAGACTTATATCTCAGAGATGCTATTCTTAGATATCCTGGGCCCCTGTGGTCACTGTGGACCCTGGGTTGTGTAATATCCATCATGACACCATTGCTGTGCTTAAAATTTTCCCTCCTCAGCCCCGGATTCCATTTCCTCATCTGCTAGGGCTACCTATAAGAGAAGGGGCATATGGCTTCAGACACC"};
+  ctga::dna::Sequence motif{"AGTCCCTC"};
+  std::vector<unsigned> pos{};
 
+  auto p = seq.find_similar(motif, 2);
+  pos.insert(pos.end(), p.begin(), p.end());
+  p = seq.find_similar(motif.rev_complement(), 2);
+  pos.insert(pos.end(), p.begin(), p.end());
+  sort(pos.begin(), pos.end());
 
+  cout << "Looking for:\n" << motif << "\n" << motif.rev_complement() << endl;
+  cout << "Similar found = " << seq.count_similar(motif, 2) << endl;
+  cout << "Pos found: " << pos << endl;
+
+  for (const auto i : pos)
+    cout << "Motif: " << seq.subsequence(i, i + motif.size()) << endl;
 
 
   return 0;

@@ -50,19 +50,19 @@ namespace dna {
 Base complement(const Base& b) {
   switch (b) {
     case Base::A: {
-      return Base::G;
-      break;
-    }
-    case Base::G: {
-      return Base::A;
-      break;
-    }
-    case Base::C: {
       return Base::T;
       break;
     }
-    case Base::T: {
+    case Base::G: {
       return Base::C;
+      break;
+    }
+    case Base::C: {
+      return Base::G;
+      break;
+    }
+    case Base::T: {
+      return Base::A;
       break;
     }
   }

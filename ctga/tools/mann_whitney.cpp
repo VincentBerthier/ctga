@@ -51,6 +51,8 @@
 #include <utility>
 #include <vector>
 
+#include "ctga/tools/statistics.hpp"
+
 namespace ctga {
 namespace tools {
 namespace statistics {
@@ -66,7 +68,7 @@ void MannWhitney::reset(const std::vector<double> &s1,
 }
 
 void MannWhitney::compute() {
-  auto ranks = rank(s1_, s2_);
+  auto ranks = rank(s1_, s2_, &ties_);
   double u1 = std::accumulate(ranks.first.begin(), ranks.first.end(), 0.);
   // auto u2 = std::accumulate(ranks.second.begin(), ranks.second.end(), 0.);
   auto n1 = s1_.size();
@@ -93,47 +95,6 @@ void MannWhitney::compute() {
   // Compute the p-value
   boost::math::normal_distribution<> nd{0, 1};
   probability_ = boost::math::cdf(boost::math::complement(nd, fabs(z)));
-}
-
-std::pair<std::vector<double>, std::vector<double>>
-MannWhitney::rank(std::vector<double> s1,
-                  std::vector<double> s2) {
-  // Start by making a pair of all elements
-  std::vector<std::pair<double, unsigned>> elts{};
-  std::vector<double> r1{}, r2{};
-
-  for (auto elt : s1)
-    elts.push_back(std::pair<double, unsigned>{elt, 1});
-  for (auto elt : s2)
-    elts.push_back(std::pair<double, unsigned>{elt, 2});
-
-  // Sort according to the values
-  std::sort(elts.begin(), elts.end());
-
-  for (auto i = 0U; i < elts.size();) {
-    // ties = 1 means only one element at that rank (no tie)
-    auto ties = 1U;
-    auto sum_rank_ties = i + 1;
-    while (i + ties < elts.size() && elts[i+ties].first == elts[i].first) {
-      sum_rank_ties += i + 1 + ties;
-      ties++;
-    }
-
-    // Assign ties mean rank to the elements and counts the number of ties
-    ties_.push_back(ties);
-    double mean_rank = static_cast<double>(sum_rank_ties) / ties;
-    for (auto j = 0U; j < ties; ++j) {
-      if (elts[i+j].second == 1)
-        r1.push_back(mean_rank);
-      else
-        r2.push_back(mean_rank);
-    }
-
-    // Jump to the first untied element (the other ones were dealt with)
-    i += ties;
-  }
-
-  return std::pair<std::vector<double>, std::vector<double>>{r1, r2};
 }
 
 }  // namespace statistics

@@ -50,22 +50,43 @@ namespace ctga {
 namespace tools {
 namespace statistics {
 
+/**
+ *  \brief Class performing the Mann-Whitney test
+ *
+ *  Class performing the Mann-Whitney test (@see
+ *  https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test)
+ */
 class MannWhitney {
  public:
+  /**
+   *  \brief MannWhitney constructor
+   *
+   *  \param s1 Vector containing the first serie of observations
+   *  \param s2 Vector containing the second serie of observations
+   */
   MannWhitney(const std::vector<double> &s1, const std::vector<double> &s2) :
       s1_{s1},
       s2_{s2} {}
 
+  /**
+   *  \brief Reset the class with two new series of observations
+   *
+   *  \param s1 Vector containing the first serie of observations
+   *  \param s2 Vector containing the second serie of observations
+   */
   void reset(const std::vector<double> &s1,
              const std::vector<double> &s2);
 
+  /**
+   *  \brief Get the p-value computed according to the Mann-Whitney test
+   *
+   *  \return p-value
+   */
   inline double operator()() {
     if (!valid_)
       compute();
     return probability_;
   }
-
-  void compute();
 
  private:
   bool valid_{false};
@@ -76,9 +97,8 @@ class MannWhitney {
   unsigned nranks_{};
   std::vector<unsigned> ties_{};
 
-  std::pair<std::vector<double>, std::vector<double>>
-  rank(std::vector<double> s1,
-       std::vector<double> s2);
+  // Compute the p-value of the two series of observations
+  void compute();
 };
 
 }  // namespace statistics

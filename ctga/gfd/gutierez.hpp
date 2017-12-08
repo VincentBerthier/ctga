@@ -102,6 +102,7 @@ class Gutierez {
 
  private:
   unsigned sub_size_;
+  unsigned motif_size_;
   std::vector<dna::Sequence> original_;
   std::vector<dna::Sequence> shuffled_;
   dna::Sequence super_;

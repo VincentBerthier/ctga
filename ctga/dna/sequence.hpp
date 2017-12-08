@@ -70,7 +70,7 @@ class Sequence {
    *
    *  \param str String containing the definition of the strand of DNA
    */
-  explicit Sequence(std::string str);
+  explicit Sequence(const std::string& str);
   /**
    *  \brief Sequence constructor
    *
@@ -82,7 +82,7 @@ class Sequence {
    *
    *  \param vec Vector of double matching DNA bases.
    */
-  explicit Sequence(std::vector<double> vec);
+  explicit Sequence(const std::vector<double>& vec);
 
   /**
    *  \brief Sequence constructor
@@ -91,7 +91,7 @@ class Sequence {
    *
    *  \param vec Vector of sequences
    */
-  explicit Sequence(std::vector<Sequence> vec);
+  explicit Sequence(const std::vector<Sequence>& vec);
 
   /**
    *  \brief Get the base at a given position
@@ -113,7 +113,7 @@ class Sequence {
    *
    *  \param seq Sequence to append
    */
-  void append(Sequence seq);
+  void append(const Sequence& seq);
 
   /**
    *  \brief Get a subsequence of the current sequence
@@ -139,6 +139,94 @@ class Sequence {
   Sequence complement() const;
 
   /**
+   *  \brief Get the reverse of the sequence
+   *
+   *  \return Reverse of the sequence
+   */
+  Sequence reverse() const;
+
+  /**
+   *  \brief Get the reverse complement of the sequence
+   *
+   *  \return Reverse complement of the sequence
+   */
+  Sequence rev_complement() const;
+
+  /**
+   *  \brief Get a shuffled motif
+   *
+   *  \return Shuffled motif based on the current one
+   */
+  Sequence shuffle() const;
+
+  /**
+   *  \brief Test if a given motif is similar to the sequence
+   *
+   *  \param motif The motif against which we want to test the sequence
+   *  \param tolerance The number of errors allowed
+   *  \return True if the sequence is similar to the motif, false otherwise
+   */
+  bool is_similar(const Sequence& motif, unsigned tolerance);
+
+  /**
+   *  \brief Given a motif, finds all positions where a similar one is found
+   *
+   *  \param motif Motif to look for
+   *  \param Percentage of errors allowed when looking for the motif
+   *  \param Width of the motif
+   *  \return return type
+   */
+  std::vector<unsigned> find_similar(const Sequence& motif,
+                                     unsigned tolerance,
+                                     unsigned width) const;
+
+  /**
+   *  \brief Given a motif, finds all positions where a similar one is found
+   *
+   *  \param motif Motif to look for
+   *  \param Percentage of errors allowed when looking for the motif
+   *  \return return type
+   */
+  std::vector<unsigned> find_similar(const Sequence& motif,
+                                     unsigned tolerance) const {
+    return find_similar(motif, tolerance, motif.size());
+  }
+
+  /**
+   *  \brief Count the number of time a motif is approximately found
+   *
+   *  Given an error tolerance, counts the number of times a motif is found in a
+   *  Sequence.
+   *
+   *  \param motif Motif to look for
+   *  \param Percentage of errors allowed when looking for the motif
+   *  \param Width of the motif
+   *  \return Number of finds
+   */
+  unsigned count_similar(const Sequence& motif,
+                         unsigned tolerance,
+                         unsigned width) const;
+
+
+  /**
+   *  \brief Count the number of time a motif is approximately found
+   *
+   *  Given an error tolerance, counts the number of times a motif is found in a
+   *  Sequence, using the full width of the motif.
+   *
+   *  \param motif Motif to look for
+   *  \param Percentage of errors allowed when looking for the motif
+   *  \return Number of finds
+   */
+  unsigned count_similar(const Sequence& motif,
+                         double tolerance) const {
+    return count_similar(motif, tolerance, motif.size());
+  }
+
+  Sequence find_consensus(const Sequence& motif, unsigned tolerance) const;
+
+
+  /**
    *  \brief Convert the DNA sequence to a vector of doubles
 
    *  \return Vector of doubles representation
@@ -151,15 +239,8 @@ class Sequence {
 
  private:
   std::vector<Base> bases_; /*!< list of bases in the sequence */
+
 };
-
-unsigned count_similar(const Sequence& base, const Sequence& motif,
-                       double tolerance, unsigned width);
-
-unsigned count_similar(const Sequence &base, const Sequence& motif,
-                       double tolerance) {
-  return count_similar(base, motif, tolerance, motif.size());
-}
 
 }  // namespace dna
 }  // namespace ctga

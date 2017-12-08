@@ -46,20 +46,87 @@
 #include <iostream>
 #include <vector>
 
+#include "ctga/dna/sequence.hpp"
+
 namespace ctga {
 namespace gfd {
 
+/**
+ *  \brief Individual to use in the genetic algorithm's population
+ */
 class Individual {
  public:
-  explicit Individual(unsigned pos, unsigned parent = 0) :
+  /**
+   *  \brief Individual constructor
+   *
+   *  \param pos Starting position of the considered motif on the DNA sequence
+   *  \param size Length of the motif represented by the individual
+   */
+  Individual(unsigned pos, unsigned size) :
       position_{pos},
+      size_{size},
+      parent_{} {}
+
+  /**
+   *  \brief Individual constructor
+   *
+   *  \param pos Starting position of the considered motif on the DNA sequence
+   *  \param size Length of the motif represented by the individual
+   *  \param parent Individual who produced this one
+   */
+  Individual(unsigned pos, unsigned size, unsigned parent) :
+      position_{pos},
+      size_{size},
       parent_{parent} {}
+
+  /**
+   *  \brief Get the starting position on the DNA sequence of the motif
+   *
+   *  \return Starting position on the DNA motif that this individual represents
+   */
   inline unsigned position() const { return position_; }
 
+  /**
+   *  \brief Formats an Individual for output
+   *
+   *  \param os Output stream
+   *  \param i Individual to format and output
+   *  \return Modified stream now containing the individual
+   */
   friend std::ostream& operator<<(std::ostream& os, const Individual& i);
+
+  /**
+   *  \brief Reset the fitness
+   */
+  inline void reset() { fitness_ = 0.; }
+
+  /**
+   *  \brief Evaluates the individual
+   *
+   *  \param sequence DNA sequence against which the individual will be scored
+   *  \param Tolerance Max allowed difference for retrieved motifs
+   */
+  void evaluate(const dna::Sequence& sequence, unsigned tolerance);
+
+  /**
+   *  \brief Evaluates the individual
+   *
+   *  \param sequence DNA sequence against which the individual will be scored
+   */
+  inline void evaluate(const dna::Sequence& sequence) {
+    return evaluate(sequence, 2);
+  }
+
+  /**
+   *  \brief Get the Mann-Whitney score of the individual
+   *
+   *  \return Mann-Whitney score of the individual
+   */
+  double mw_score() const;
 
  private:
   unsigned position_;
+  unsigned size_;
   unsigned parent_;
   bool survived_{true};
   double fitness_{};

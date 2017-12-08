@@ -58,7 +58,7 @@ namespace io {
 using std::string;
 using std::vector;
 
-std::vector<dna::Sequence> read_file(std::string path) {
+std::vector<dna::Sequence> read_file(const std::string& path) {
   std::vector<dna::Sequence> res{};
   string data{};
   std::ifstream input{path};

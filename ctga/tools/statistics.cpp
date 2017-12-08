@@ -42,6 +42,7 @@
 
 #include "ctga/tools/statistics.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <map>
 #include <utility>
@@ -73,6 +74,50 @@ std::pair<double, double> mean_std(const std::vector<double>& vec) {
                                                      vec.end(),
                                                      0., lambda));
   return {m, sd};
+}
+
+
+
+std::pair<std::vector<double>, std::vector<double>>
+rank(const std::vector<double>& s1,
+     const std::vector<double>& s2,
+     std::vector<unsigned>* ties) {
+  // Start by making a pair of all elements
+  std::vector<std::pair<double, unsigned>> elts{};
+  std::vector<double> r1{}, r2{};
+
+  for (const auto& elt : s1)
+    elts.push_back(std::pair<double, unsigned>{elt, 1});
+  for (const auto& elt : s2)
+    elts.push_back(std::pair<double, unsigned>{elt, 2});
+
+  // Sort according to the values
+  std::sort(elts.begin(), elts.end());
+
+  for (auto i = 0U; i < elts.size();) {
+    // ties = 1 means only one element at that rank (no tie)
+    auto nties = 1U;
+    auto sum_rank_ties = i + 1;
+    while (i + nties < elts.size() && elts[i+nties].first == elts[i].first) {
+      sum_rank_ties += i + 1 + nties;
+      nties++;
+    }
+
+    // Assign ties mean rank to the elements and counts the number of ties
+    if (ties != nullptr) ties->push_back(nties);
+    double mean_rank = static_cast<double>(sum_rank_ties) / nties;
+    for (auto j = 0U; j < nties; ++j) {
+      if (elts[i+j].second == 1)
+        r1.push_back(mean_rank);
+      else
+        r2.push_back(mean_rank);
+    }
+
+    // Jump to the first untied element (the other ones were dealt with)
+    i += nties;
+  }
+
+  return std::pair<std::vector<double>, std::vector<double>>{r1, r2};
 }
 
 double dist_kurtosis(double fit, const std::vector<double>& vec) {

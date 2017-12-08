@@ -50,11 +50,11 @@
 #include <string>
 #include <vector>
 
-/** \namespace gfd
+/** \namespace ctga
  * Main namespace of the application
  */
 
-/** \namespace gfd::tools::dna
+/** \namespace ctga::dna
  * Contains all the tools relating to the DNA itself
  */
 

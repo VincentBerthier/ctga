@@ -85,7 +85,7 @@ void Gutierez::init_population(unsigned int pop_size) {
       is_ok = valid && unique;
     }
     taken_.emplace(pos);
-    pop_.push_back(Individual{pos});
+    pop_.push_back(Individual{pos, motif_size_});
     std::cout << pop_.back() << std::endl;
   }
 }

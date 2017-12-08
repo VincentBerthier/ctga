@@ -43,10 +43,39 @@
 #include "ctga/gfd/individual.hpp"
 
 #include <iostream>
+#include <numeric>
 #include <vector>
+
+#include "ctga/dna/sequence.hpp"
+#include "ctga/tools/mann_whitney.hpp"
 
 namespace ctga {
 namespace gfd {
+
+void Individual::evaluate(const dna::Sequence &sequence, unsigned tolerance) {
+  auto motif = sequence.subsequence(position_, position_ + size_);
+  auto shuffled = motif.shuffle();
+
+  auto score1 = sequence.count_similar(motif, tolerance);
+  auto score2 = sequence.count_similar(motif, tolerance);
+
+  mw_orig_.push_back(score1);
+  mw_shuf_.push_back(score2);
+
+  fitness_ += score1 - score2;
+}
+
+double Individual::mw_score() const {
+  double res{};
+  if (std::accumulate(mw_orig_.begin(), mw_orig_.end(), 0.0) == 0.) {
+    res = 1.;
+  } else if (std::accumulate(mw_shuf_.begin(), mw_shuf_.end(), 0.0) == 0.) {
+    res = 0.05;
+  } else {
+    res = tools::statistics::MannWhitney {mw_orig_, mw_shuf_}();
+  }
+  return res;
+}
 
 std::ostream& operator<<(std::ostream& os, const Individual& i)
 {

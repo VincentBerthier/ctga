@@ -50,7 +50,7 @@
 
 #include "ctga/dna/sequence.hpp"
 
-/** \namespace gfd::tools::parser
+/** \namespace ctga::tools::io
  * Handles all operation related to files reading
  */
 
@@ -81,7 +81,7 @@ namespace io {
  *  \param path Path to the file to read
  *  \return Vector of DNA sequences
  */
-std::vector<dna::Sequence> read_file(std::string path);
+std::vector<dna::Sequence> read_file(const std::string& path);
 
 
 }  // namespace io

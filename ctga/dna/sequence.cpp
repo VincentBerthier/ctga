@@ -45,9 +45,13 @@
 #include <assert.h>
 #include <algorithm>
 #include <cmath>
+#include <map>
 #include <string>
 #include <sstream>
+#include <utility>
 #include <vector>
+
+#include "ctga/tools/random_generator.hpp"
 
 namespace ctga {
 namespace dna {
@@ -55,14 +59,14 @@ namespace dna {
 using std::string;
 using std::vector;
 
-Sequence::Sequence(std::string str) : bases_{} {
+Sequence::Sequence(const std::string& str) : bases_{} {
   std::stringstream ss{str};
   bases_ = vector<Base>((std::istream_iterator<Base>(ss)),
                         std::istream_iterator<Base>());
 }
 
-Sequence::Sequence(std::vector<double> vec): bases_{} {
-  for (auto d : vec) {
+Sequence::Sequence(const std::vector<double>& vec): bases_{} {
+  for (const auto& d : vec) {
     assert((d <= 4) && (d >= 0));
     switch (static_cast<unsigned>(ceil(d))) {
       case 1U: {
@@ -85,8 +89,8 @@ Sequence::Sequence(std::vector<double> vec): bases_{} {
   }
 }
 
-Sequence::Sequence(std::vector<Sequence> vec) : bases_{} {
-  for (auto seq : vec) append(seq);
+Sequence::Sequence(const std::vector<Sequence>& vec) : bases_{} {
+  for (const auto& seq : vec) append(seq);
 }
 
 Sequence Sequence::subsequence(unsigned start, unsigned stop) const {
@@ -96,14 +100,15 @@ Sequence Sequence::subsequence(unsigned start, unsigned stop) const {
   if (stop > bases_.size())
     stop = bases_.size();
 
-  std::vector<Base> bases(stop - start);
-  std::copy(bases_.begin() + start, bases_.begin() + stop, bases.begin());
+  std::vector<Base> bases{};
+  bases.insert(bases.end(), bases_.begin() + start, bases_.begin() + stop);
+  // std::copy(bases_.begin() + start, bases_.begin() + stop, bases.begin());
 
   return Sequence{bases};
 }
 
 
-void Sequence::append(Sequence seq) {
+void Sequence::append(const Sequence& seq) {
   bases_.insert(bases_.end(), seq.bases_.begin(), seq.bases_.end());
 }
 
@@ -119,6 +124,106 @@ Sequence Sequence::complement() const {
     comp.push_back(dna::complement(b));
   return Sequence{comp};
 }
+
+Sequence Sequence::reverse() const {
+  std::vector<Base> rev{};
+  for (auto rit = bases_.rbegin(); rit != bases_.rend(); rit++)
+    rev.push_back(*rit);
+  return Sequence{rev};
+}
+
+Sequence Sequence::rev_complement() const {
+  return complement().reverse();
+}
+
+Sequence Sequence::shuffle() const {
+  auto shuffled = bases_;
+  auto gen = tools::RandomGenerator::get();
+
+  gen->permutation(shuffled.begin(), shuffled.end(), shuffled.size());
+
+  return Sequence{shuffled};
+}
+
+bool Sequence::is_similar(const Sequence& motif, unsigned tolerance) {
+  unsigned i{}, diff{};
+  while (diff <= tolerance && i < motif.size()) {
+    if (bases_[i] != motif.bases_[i]) diff++;
+    i++;
+  }
+  return diff <= tolerance;
+}
+
+std::vector<unsigned> Sequence::find_similar(const Sequence& motif,
+                                             unsigned tolerance,
+                                             unsigned width) const {
+  std::vector<unsigned> res{};
+  for (auto i = 0U; i < bases_.size() - width; ++i) {
+    if (subsequence(i, i + width).is_similar(motif, tolerance))
+      res.push_back(i);
+  }
+  return res;
+}
+
+unsigned Sequence::count_similar(const Sequence& motif,
+                                 unsigned tolerance,
+                                 unsigned width) const {
+  return find_similar(motif, tolerance, width).size()
+      + find_similar(motif.rev_complement(), tolerance, width).size();
+}
+
+template<typename A, typename B>
+std::pair<B, A> flip_pair(const std::pair<A, B> &p)
+{
+  return std::pair<B, A>(p.second, p.first);
+}
+
+template<typename A, typename B>
+std::multimap<B, A> flip_map(const std::map<A, B> &src)
+{
+  std::multimap<B, A> dst;
+  std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()),
+                 flip_pair<A, B>);
+  return dst;
+}
+
+Sequence Sequence::find_consensus(const Sequence& motif,
+                                  unsigned tolerance) const {
+  // Find similar motifs
+  auto sim1 = find_similar(motif, tolerance);
+  auto sim2 = find_similar(motif.rev_complement(), tolerance);
+
+  std::vector<Sequence> seqs{};
+
+  // Retrieve all the sequences
+  for (auto i : sim1)
+    seqs.push_back(subsequence(i, i + motif.size()));
+  for (auto i : sim2)
+    seqs.push_back(subsequence(i, i + motif.size()));
+
+  std::vector<Base> consensus{};
+
+  // At each position, find the most present bases
+  // What about ties??
+
+  for (auto i = 0U; i < motif.size(); ++i) {
+    std::map<Base, unsigned> counts{};
+    for (const auto& s : seqs) {
+      auto elt = counts.find(s[i]);
+      if (elt == counts.end())
+        counts.emplace(s[i], 0);
+      else
+        elt->second++;
+    }
+    // Reverse map, it is now sorted by value.
+    // Last one is the most frequent bases
+    auto sorted = flip_map(counts);
+
+    consensus.push_back(sorted.rbegin()->second);
+  }
+  return Sequence{consensus};
+}
+
 
 Sequence::operator std::vector<double>() const {
   vector<double> res{};
@@ -163,29 +268,6 @@ std::ostream& operator<<(std::ostream& os, const Sequence& s) {
             s.bases_.end(),
             std::ostream_iterator<Base>{os, ""});
   return os;
-}
-
-unsigned count_similar_main(const Sequence& base, const Sequence& motif,
-                            double tol, unsigned width) {
-  unsigned res{};
-  unsigned tolerance = ceil(width * tol);
-  for (auto i = 0U; i < base.size() - width; ++i) {
-    unsigned diff{};
-    auto seq = base.subsequence(i, i + width);
-    unsigned j{};
-    while (diff <= tolerance && j < width) {
-      if (base[i + j] != motif[j]) diff++;
-      j++;
-    }
-    if (diff <= tolerance) res++;
-  }
-  return res;
-}
-
-unsigned count_similar(const Sequence& base, const Sequence& motif,
-                       double tolerance, unsigned width) {
-  return count_similar_main(base, motif, tolerance, width)
-      + count_similar_main(base, motif.complement(), tolerance, width);
 }
 
 
