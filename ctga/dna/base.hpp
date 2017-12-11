@@ -62,10 +62,21 @@ namespace ctga {
 namespace dna {
 /** \brief Enumeration of the different type of bases found in DNA */
 enum class Base {
-  A = 1, /*!< Adenine */
-  C = 2, /*!< Cytosine */
-  G = 3, /*!< Guanine */
-  T = 4 /*!< Thymine */
+  A, /*!< Adenine */
+  C, /*!< Cytosine */
+  G, /*!< Guanine */
+  T, /*!< Thymine */
+  M, /*!< A or C */
+  R, /*!< A or G */
+  W, /*!< A or T */
+  S, /*!< C or G */
+  Y, /*!< C or T */
+  K, /*!< G or T */
+  V, /*!< Not T */
+  H, /*!< Not G */
+  D, /*!< Not C */
+  B, /*!< Not A */
+  N /*!< Any base */
 };
 
 Base complement(const Base& b);

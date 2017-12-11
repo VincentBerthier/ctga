@@ -65,14 +65,18 @@ void Individual::evaluate(const dna::Sequence &sequence, unsigned tolerance) {
   fitness_ += score1 - score2;
 }
 
-double Individual::mw_score() const {
+double Individual::mw_score(bool force) const {
   double res{};
-  if (std::accumulate(mw_orig_.begin(), mw_orig_.end(), 0.0) == 0.) {
-    res = 1.;
-  } else if (std::accumulate(mw_shuf_.begin(), mw_shuf_.end(), 0.0) == 0.) {
-    res = 0.05;
+  if (mw_orig_.size() >= 5 || force) {
+    if (std::accumulate(mw_orig_.begin(), mw_orig_.end(), 0.0) == 0.) {
+      res = 1.;
+    } else if (std::accumulate(mw_shuf_.begin(), mw_shuf_.end(), 0.0) == 0.) {
+      res = 0.05;
+    } else {
+      res = tools::statistics::MannWhitney {mw_orig_, mw_shuf_}();
+    }
   } else {
-    res = tools::statistics::MannWhitney {mw_orig_, mw_shuf_}();
+    res = -1.;
   }
   return res;
 }

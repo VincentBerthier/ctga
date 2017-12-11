@@ -54,6 +54,7 @@
 using std::cout;
 using std::endl;
 using std::vector;
+using ctga::dna::Sequence;
 
 int main(int, char**) {
   // initialize random generation
@@ -96,6 +97,30 @@ int main(int, char**) {
 
   for (const auto i : pos)
     cout << "Motif: " << seq.subsequence(i, i + motif.size()) << endl;
+
+  std::vector<Sequence> test_consensus{Sequence{"AACCTGGT"},
+        Sequence{"AACCTGAA"},
+            Sequence{"AACCGGTT"},
+                Sequence{"AACCTCTT"},
+                    Sequence{"AACCAGAT"},
+                        Sequence{"CACCTGGT"},
+                            Sequence{"CCCCGGTT"},
+                                Sequence{"CCCCTGCT"},
+                                    Sequence{"CCCGTGTT"},
+                                        Sequence{"CCCAAGTT"},
+                                            Sequence{"GCTGGGTT"},
+                                                Sequence{"GCTGTGTA"},
+                                                    Sequence{"GGTGTGTC"},
+                                                        Sequence{"GGTGTGTT"},
+                                                            Sequence{"GGTGTGCC"},
+                                                                Sequence{"TGTGTTCT"},
+                                                                    Sequence{"TGTCTGTT"},
+                                                                        Sequence{"TGTGTCTG"},
+                                                                            Sequence{"TTTGGCTT"},
+                                                                                Sequence{"TTTGTGGT"}};
+
+  cout << "Consensus: " <<   Sequence::find_consensus(test_consensus) << endl;
+
 
 
   return 0;

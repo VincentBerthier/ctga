@@ -62,18 +62,44 @@ class Gutierez {
    *  \param size Size of the submotifs
    *  \param seqs Sequences of DNA to analyse
    */
-  Gutierez(unsigned size, const std::vector<dna::Sequence>& seqs) :
-      sub_size_{size},
+  Gutierez(const std::vector<dna::Sequence>& seqs,
+           unsigned subsize, unsigned motifsize) :
+      sub_size_{subsize},
+      motif_size_{motifsize},
       original_{seqs},
       shuffled_{},
       super_{""},
       subs_{}
   {}
 
+  void operator()(unsigned ngens, unsigned pop_size);
+
+ private:
+  unsigned sub_size_;
+  unsigned motif_size_;
+  std::vector<dna::Sequence> original_;
+  std::vector<dna::Sequence> shuffled_;
+  dna::Sequence super_;
+  std::vector<dna::Sequence> subs_;
+
+  std::vector<Individual> pop_{};
+  std::unordered_set<unsigned> taken_{};
+
+  /**
+   *  \brief Initialises a population
+   *
+   *  \param pop_size Number of individuals in the population
+   */
+  void init_population(unsigned pop_size);
+
   /**
    *  \brief Reinitialises the random sequences
    */
   void refresh();
+
+  void decimate();
+
+  void create_offsprings(unsigned pop_size, double mutation_rate);
 
   /**
    *  \brief Check that the current position is valid
@@ -92,24 +118,6 @@ class Gutierez {
   inline bool is_unique(unsigned pos) const {
     return taken_.find(pos) == taken_.end();
   }
-
-  /**
-   *  \brief Initialises a population
-   *
-   *  \param pop_size Number of individuals in the population
-   */
-  void init_population(unsigned pop_size);
-
- private:
-  unsigned sub_size_;
-  unsigned motif_size_;
-  std::vector<dna::Sequence> original_;
-  std::vector<dna::Sequence> shuffled_;
-  dna::Sequence super_;
-  std::vector<dna::Sequence> subs_;
-
-  std::vector<Individual> pop_{};
-  std::unordered_set<unsigned> taken_{};
 };
 
 

@@ -79,12 +79,22 @@ class Individual {
       size_{size},
       parent_{parent} {}
 
+  bool operator<(const Individual& other) const {
+    return fitness_ <= other.fitness_;
+  }
+
+  bool operator>(const Individual& other) const {
+    return !(operator<(other));
+  }
+
   /**
    *  \brief Get the starting position on the DNA sequence of the motif
    *
    *  \return Starting position on the DNA motif that this individual represents
    */
   inline unsigned position() const { return position_; }
+
+  inline double fitness() const { return fitness_; }
 
   /**
    *  \brief Formats an Individual for output
@@ -117,12 +127,19 @@ class Individual {
     return evaluate(sequence, 2);
   }
 
+  inline void kill() { survived_ = false; }
+
   /**
    *  \brief Get the Mann-Whitney score of the individual
    *
+   *  \param force If true, ignore the size restriction
    *  \return Mann-Whitney score of the individual
    */
-  double mw_score() const;
+  double mw_score(bool force) const;
+
+  inline double mw_score() const { return mw_score(false); }
+
+  inline unsigned alive_for() const { return mw_orig_.size(); }
 
  private:
   unsigned position_;

@@ -48,6 +48,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -187,6 +188,64 @@ std::multimap<B, A> flip_map(const std::map<A, B> &src)
   return dst;
 }
 
+Sequence Sequence::find_consensus(const std::vector<Sequence> &seqs) {
+  std::vector<Base> consensus{};
+
+  // At each position, find the most present bases
+  for (auto i = 0U; i < seqs[0].size(); ++i) {
+    std::cout << "Base at position " << i << std::endl;
+    std::map<Base, unsigned> counts{{Base::A, 0}, {Base::C, 0},
+                                                  {Base::G, 0}, {Base::T, 0}};
+    for (const auto& s : seqs) counts.find(s[i])->second++;
+
+    // Reverse map, it is now sorted by value.
+    // Last one is the most frequent bases
+    auto sorted = flip_map(counts);
+
+    for (const auto &it : sorted)
+      std::cout << it.first << " - " << it.second << std::endl;
+
+    Base sel;
+    // Fifteen possible cases to go through
+    auto pt = sorted.begin();
+    auto end = sorted.rbegin();
+    if (pt->first == end->first) {
+      sel = Base::N;
+    } else if ((++pt)->first == end->first) {
+      // We are in the "Not X" situation
+      switch (sorted.begin()->second) {
+        case Base::A: sel = Base::B; break;
+        case Base::C: sel = Base::D; break;
+        case Base::G: sel = Base::H; break;
+        case Base::T: sel = Base::V; break;
+        default: throw std::runtime_error{"Not happening"};
+      }
+    } else if ((++pt)->first == end->first) {
+      // Two bases equally represented
+      if (pt->second == Base::A || end->second == Base::A) {
+        if (pt->second == Base::C || end->second == Base::C)
+          sel = Base::M;
+        else if (pt->second == Base::G || end->second == Base::G)
+          sel = Base::R;
+        else
+          sel = Base::W;
+      } else if (pt->second == Base::C || end->second == Base::C) {
+        if (pt->second == Base::G || end->second == Base::G)
+          sel = Base::S;
+        else
+          sel = Base::Y;
+      } else {
+        sel = Base::K;
+      }
+    } else {
+      // Only base found more often than others
+      sel = sorted.rbegin()->second;
+    }
+    consensus.push_back(sel);
+  }
+  return Sequence{consensus};
+}
+
 Sequence Sequence::find_consensus(const Sequence& motif,
                                   unsigned tolerance) const {
   // Find similar motifs
@@ -201,27 +260,7 @@ Sequence Sequence::find_consensus(const Sequence& motif,
   for (auto i : sim2)
     seqs.push_back(subsequence(i, i + motif.size()));
 
-  std::vector<Base> consensus{};
-
-  // At each position, find the most present bases
-  // What about ties??
-
-  for (auto i = 0U; i < motif.size(); ++i) {
-    std::map<Base, unsigned> counts{};
-    for (const auto& s : seqs) {
-      auto elt = counts.find(s[i]);
-      if (elt == counts.end())
-        counts.emplace(s[i], 0);
-      else
-        elt->second++;
-    }
-    // Reverse map, it is now sorted by value.
-    // Last one is the most frequent bases
-    auto sorted = flip_map(counts);
-
-    consensus.push_back(sorted.rbegin()->second);
-  }
-  return Sequence{consensus};
+  return Sequence::find_consensus(seqs);
 }
 
 

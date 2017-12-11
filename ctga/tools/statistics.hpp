@@ -55,6 +55,17 @@ namespace tools {
 namespace statistics {
 
 /**
+ *  \brief Sums the elements of a vector
+ *
+ *  \return Sum of the elements
+ */
+template <typename T>
+inline double sum(typename std::vector<T>::iterator begin,
+                  typename std::vector<T>::iterator end) {
+  return std::accumulate(begin, end, 0.0);
+}
+
+/**
  *  \brief Compute the mean of a vector
  *
  *  \param vec Vector containing the values for which to compute the mean

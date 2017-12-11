@@ -225,6 +225,8 @@ class Sequence {
 
   Sequence find_consensus(const Sequence& motif, unsigned tolerance) const;
 
+  static Sequence find_consensus(const std::vector<Sequence> &seqs);
+
 
   /**
    *  \brief Convert the DNA sequence to a vector of doubles
