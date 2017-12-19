@@ -41,11 +41,17 @@
 // Code:
 
 
+#include <coffee/portfolios/all_portfolios.hpp>
+#include <coffee/optimisers/all_optimisers.hpp>
+#include <coffee/optimisers/utils/progressive_widening.hpp>
+#include <coffee/tools/logs.hpp>
+
 #include <algorithm>
 #include <iostream>
 #include <vector>
 
 #include "ctga/gfd/gutierez.hpp"
+#include "ctga/gfd/pwm_evaluator.hpp"
 #include "ctga/tools/io.hpp"
 #include "ctga/tools/random_generator.hpp"
 #include "ctga/tools/mann_whitney.hpp"
@@ -57,71 +63,58 @@ using std::vector;
 using ctga::dna::Sequence;
 
 int main(int, char**) {
+
+  Coffee::Tools::configure_logs(11, "", Coffee::Tools::Logs::Source::all);
+
   // initialize random generation
   ctga::tools::RandomGenerator::get();
 
-  auto data = ctga::tools::io::read_file("../data/example.fasta");
+  auto data = ctga::tools::io::read_file("../data/dm02r.fasta");
   ctga::dna::Sequence full{data};
 
   cout << "Sequence read: " << full << endl;
-  vector<double> vec{full};
-  cout << vec.size() << endl;
-  vector<double> test{1.22, 0.122, 1.99, 2, 3.2, 3.5, 4, 1.1, 1, 2.4};
-  cout << "Test conversion: " << ctga::dna::Sequence{test} << endl;
 
-  ctga::gfd::Gutierez gut{300, data};
-  gut.refresh();
-  gut.init_population(10);
+  unsigned motif_width{9};
+  auto nParams = motif_width * 4;
 
-  vector<double> test1{3, 4, 2, 6, 2, 5};
-  vector<double> test2{9, 7, 5, 10, 6, 8};
-
-  ctga::tools::statistics::MannWhitney mw{test1, test2};
-
-  cout << "P-value: " << mw() << endl;
-
-  ctga::dna::Sequence
-      seq{"GTCTTAAATGTGACCGCGTCTTCCCCATTGCTCGAGCTGGAGATGCTTTTCCTCAGTCCCTCACTGTGGTGGTAGGAGGGGCTGTTGTGCCACCATCCACAGCTATTCTTCCATGTGGTTAGAGAAGCTGAGAAATAACGAGAGTTTCCGTTCCATGGCAAGGAATGGGTTTGGAGTGTTTATTCACAGAACGGTTCTCATGAGATGGGACCAGCTAAGAATAGCCCTGGGTTGACACTGTCCTACCTCCTCCTGCTCATAAGAGAAACTACTTCCCCACAAGAAGAAAGAATAGGTCACGAGTTGAGAGCTGAGACTTATATCTCAGAGATGCTATTCTTAGATATCCTGGGCCCCTGTGGTCACTGTGGACCCTGGGTTGTGTAATATCCATCATGACACCATTGCTGTGCTTAAAATTTTCCCTCCTCAGCCCCGGATTCCATTTCCTCATCTGCTAGGGCTACCTATAAGAGAAGGGGCATATGGCTTCAGACACC"};
-  ctga::dna::Sequence motif{"AGTCCCTC"};
-  std::vector<unsigned> pos{};
-
-  auto p = seq.find_similar(motif, 2);
-  pos.insert(pos.end(), p.begin(), p.end());
-  p = seq.find_similar(motif.rev_complement(), 2);
-  pos.insert(pos.end(), p.begin(), p.end());
-  sort(pos.begin(), pos.end());
-
-  cout << "Looking for:\n" << motif << "\n" << motif.rev_complement() << endl;
-  cout << "Similar found = " << seq.count_similar(motif, 2) << endl;
-  cout << "Pos found: " << pos << endl;
-
-  for (const auto i : pos)
-    cout << "Motif: " << seq.subsequence(i, i + motif.size()) << endl;
-
-  std::vector<Sequence> test_consensus{Sequence{"AACCTGGT"},
-        Sequence{"AACCTGAA"},
-            Sequence{"AACCGGTT"},
-                Sequence{"AACCTCTT"},
-                    Sequence{"AACCAGAT"},
-                        Sequence{"CACCTGGT"},
-                            Sequence{"CCCCGGTT"},
-                                Sequence{"CCCCTGCT"},
-                                    Sequence{"CCCGTGTT"},
-                                        Sequence{"CCCAAGTT"},
-                                            Sequence{"GCTGGGTT"},
-                                                Sequence{"GCTGTGTA"},
-                                                    Sequence{"GGTGTGTC"},
-                                                        Sequence{"GGTGTGTT"},
-                                                            Sequence{"GGTGTGCC"},
-                                                                Sequence{"TGTGTTCT"},
-                                                                    Sequence{"TGTCTGTT"},
-                                                                        Sequence{"TGTGTCTG"},
-                                                                            Sequence{"TTTGGCTT"},
-                                                                                Sequence{"TTTGTGGT"}};
-
-  cout << "Consensus: " <<   Sequence::find_consensus(test_consensus) << endl;
+  auto evaluator = ctga::gfd::PWM_Evaluator{50 * 1000, full};
+  unsigned portfolioType{};
 
 
+  std::vector<unsigned> optimisers{8};
+  auto reevalFormula = GiNaC::numeric{1};
+  // Optimisers params
+  auto params = Coffee::Optimisers::get_default_parameters(optimisers, nParams);
+  params[0]->bounds = Coffee::Optimisers::Bounds{0., 1.};
+  std::vector<double> mean{0.5};
+  params[0]->meanInit = mean;
+  params[0]->sigmaInit = std::vector<double>{1. / 6};
+  params[0]->minimise = false;
+  params[0]->mu = 60;
+  auto portfolio = Coffee::Portfolios::get_portfolio(
+      portfolioType, &evaluator, optimisers, params);
+  portfolio->set_restart(false);
+
+  // Running decision making
+  (*portfolio)(5 * 60);
+
+  // Get selected parameters
+  Eigen::VectorXd best{portfolio->best_params()};
+  ctga::dna::PWM best_pwm{best};
+
+  auto list = full.count_similar(best_pwm.consensus(), 2);
+
+  for (const auto& s : full.find_similar(best_pwm.consensus(), 2))
+    cout << "At " << s << ":\t" << full.subsequence(s, s + motif_width) << endl;
+  for (const auto& s : full.rev_complement().find_similar(best_pwm.consensus(), 2))
+    cout << "At " << full.size() - s << "\t: "
+         << full.rev_complement().subsequence(s, s + motif_width) << endl;
+
+  cout << "Matched " << list << endl;
+
+  cout << "Optimization result:\n" << best_pwm.to_proba() << endl
+       << "Consensus is: " << best_pwm.consensus()
+       << "\nReverse is  : " << best_pwm.consensus().rev_complement() << endl;
 
   return 0;
 }

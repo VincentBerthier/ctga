@@ -43,6 +43,7 @@
 #ifndef CTGA_TOOLS_STATISTICS_HPP_
 #define CTGA_TOOLS_STATISTICS_HPP_
 
+#include <eigen3/Eigen/Core>
 #include <gsl/gsl_statistics.h>
 
 #include <map>
@@ -161,6 +162,21 @@ double dist_kurtosis(double val, const std::vector<double>& vec);
  *  \return Thinness of the current point
  */
 double thinness(double val, const std::vector<double> &vec);
+
+/**
+ *  \brief Normalise the probabilies
+ *
+ *  Given a vector of four numbers, it will make sure that the minimum value is
+ * is not lower that the threshold and that they all sum to one
+ *
+ *  \param values Vector of four values
+ *  \param threshold Minimum authorized valu
+ *  \return Normalised values to probabilies
+ */
+Eigen::VectorXd normalise(const Eigen::VectorXd& values,
+                          double threshold);
+
+
 
 }  // namespace statistics
 }  // namespace tools

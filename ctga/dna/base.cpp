@@ -43,9 +43,30 @@
 #include "ctga/dna/base.hpp"
 
 #include <iostream>
+#include <map>
+#include <unordered_set>
+#include <utility>
 
 namespace ctga {
 namespace dna {
+
+std::map<Base, std::unordered_set<Base>> base_matches =
+    boost::assign::map_list_of
+    (Base::A, std::unordered_set<Base>{Base::A})
+    (Base::C, std::unordered_set<Base>{Base::C})
+    (Base::G, std::unordered_set<Base>{Base::G})
+    (Base::T, std::unordered_set<Base>{Base::T})
+    (Base::M, std::unordered_set<Base>{Base::A, Base::C})
+    (Base::R, std::unordered_set<Base>{Base::A, Base::G})
+    (Base::W, std::unordered_set<Base>{Base::A, Base::T})
+    (Base::S, std::unordered_set<Base>{Base::C, Base::G})
+    (Base::Y, std::unordered_set<Base>{Base::C, Base::T})
+    (Base::K, std::unordered_set<Base>{Base::G, Base::T})
+    (Base::V, std::unordered_set<Base>{Base::A, Base::C, Base::G})
+    (Base::H, std::unordered_set<Base>{Base::A, Base::C, Base::T})
+    (Base::D, std::unordered_set<Base>{Base::A, Base::G, Base::T})
+    (Base::B, std::unordered_set<Base>{Base::C, Base::G, Base::T})
+    (Base::N, std::unordered_set<Base>{Base::A, Base::C, Base::G, Base::T});
 
 Base complement(const Base& b) {
   Base sel;
@@ -67,6 +88,19 @@ Base complement(const Base& b) {
     case Base::N: sel = Base::N; break;
   }
   return sel;
+}
+
+std::unordered_set<Base> match(const Base& a, const Base& b) {
+  std::unordered_set<Base> res{};
+  if (a == b) {
+    res = base_matches[a];
+  } else {
+    for (const auto& elt : base_matches[a]) {
+      if (base_matches[b].find(elt) != base_matches[b].end())
+        res.emplace(elt);
+    }
+  }
+  return res;
 }
 
 std::ostream& operator<<(std::ostream& os, const Base& b) {

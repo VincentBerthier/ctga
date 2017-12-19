@@ -146,10 +146,19 @@ Sequence Sequence::shuffle() const {
   return Sequence{shuffled};
 }
 
-bool Sequence::is_similar(const Sequence& motif, unsigned tolerance) {
+unsigned Sequence::distance(const Sequence& motif) const {
+  assert(motif.size() == bases_.size());
+  unsigned res{};
+  for (auto i = 0U; i < motif.size(); ++i)
+    if (!compatible(bases_[i], motif.bases_[i])) res++;
+  return res;
+}
+
+bool Sequence::is_similar(const Sequence& motif, unsigned tolerance) const {
+  assert(motif.size() == bases_.size());
   unsigned i{}, diff{};
   while (diff <= tolerance && i < motif.size()) {
-    if (bases_[i] != motif.bases_[i]) diff++;
+    if (!compatible(bases_[i], motif.bases_[i])) diff++;
     i++;
   }
   return diff <= tolerance;
@@ -262,7 +271,6 @@ Sequence Sequence::find_consensus(const Sequence& motif,
 
   return Sequence::find_consensus(seqs);
 }
-
 
 Sequence::operator std::vector<double>() const {
   vector<double> res{};

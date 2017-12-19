@@ -137,6 +137,14 @@ message(STATUS "CMAKE_MODULE_LINKER_FLAGS=${CMAKE_MODULE_LINKER_FLAGS}")
 ##                     Libraries                         ##
 ###########################################################
 
+
+#find_package(GMP REQUIRED)
+find_package(CLN REQUIRED)
+#find_package(GiNaC REQUIRED)
+
+# Coffee install dir
+include_directories(/usr/local/include/coffee)
+
 # GNU Scientific Library
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
@@ -144,6 +152,8 @@ include_directories(${GSL_INCLUDE_DIRS})
 # Eigen 3
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
+
+
 
 # Boost
 set(Boost_USE_MULTITHREADED TRUE)
@@ -166,7 +176,7 @@ get_property(DEFINITIONS_VALUES GLOBAL PROPERTY DEFINITIONS)
 add_definitions(${DEFINITIONS_VALUES})
 
 add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${GSL_LIBRARIES} pthread rt)
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${GSL_LIBRARIES} coffee ginac cln pthread rt)
 
 # Multi-threaded binary
 add_executable(${EXEC_NAME} "ctga/main.cpp" ${HEADERS})

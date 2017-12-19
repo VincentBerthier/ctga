@@ -39,3 +39,4 @@ GTAGS
 *#
 /build*
 *CMakeFiles*
+*.fasta

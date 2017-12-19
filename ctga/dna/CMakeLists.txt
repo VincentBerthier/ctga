@@ -1,10 +1,12 @@
 SET(dna_src
   base.cpp
-  sequence.cpp)
+  sequence.cpp
+  pwm.cpp)
 
 SET(dna_hpp
   base.hpp
-  sequence.hpp)
+  sequence.hpp
+  pwm.hpp)
 
 SET(dna_files ${dna_src} ${dna_hpp})
 

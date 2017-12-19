@@ -160,13 +160,21 @@ class Sequence {
   Sequence shuffle() const;
 
   /**
+   *  \brief Counts the number of differences between two sequences
+   *
+   *  \param seq Other sequence
+   *  \return return Number of differences
+   */
+  unsigned distance(const Sequence& motif) const;
+
+  /**
    *  \brief Test if a given motif is similar to the sequence
    *
    *  \param motif The motif against which we want to test the sequence
    *  \param tolerance The number of errors allowed
    *  \return True if the sequence is similar to the motif, false otherwise
    */
-  bool is_similar(const Sequence& motif, unsigned tolerance);
+  bool is_similar(const Sequence& motif, unsigned tolerance) const;
 
   /**
    *  \brief Given a motif, finds all positions where a similar one is found
@@ -219,14 +227,13 @@ class Sequence {
    *  \return Number of finds
    */
   unsigned count_similar(const Sequence& motif,
-                         double tolerance) const {
+                         unsigned tolerance) const {
     return count_similar(motif, tolerance, motif.size());
   }
 
   Sequence find_consensus(const Sequence& motif, unsigned tolerance) const;
 
   static Sequence find_consensus(const std::vector<Sequence> &seqs);
-
 
   /**
    *  \brief Convert the DNA sequence to a vector of doubles

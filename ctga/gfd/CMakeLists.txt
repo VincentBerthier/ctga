@@ -1,10 +1,12 @@
 SET(gfd_src
   individual.cpp
-  gutierez.cpp)
+  gutierez.cpp
+  pwm_evaluator.cpp)
 
 SET(gfd_hpp
   individual.hpp
-  gutierez.hpp)
+  gutierez.hpp
+  pwm_evaluator.hpp)
 
 SET(gfd_files ${gfd_src} ${gfd_hpp})
 

@@ -44,10 +44,13 @@
 #ifndef CTGA_DNA_BASE_HPP_
 #define CTGA_DNA_BASE_HPP_
 
+#include <boost/assign.hpp>
+
 #include <algorithm>
 #include <iterator>
 #include <iostream>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 /** \namespace ctga
@@ -61,7 +64,7 @@
 namespace ctga {
 namespace dna {
 /** \brief Enumeration of the different type of bases found in DNA */
-enum class Base {
+enum class Base : unsigned {
   A, /*!< Adenine */
   C, /*!< Cytosine */
   G, /*!< Guanine */
@@ -79,7 +82,14 @@ enum class Base {
   N /*!< Any base */
 };
 
+
 Base complement(const Base& b);
+
+std::unordered_set<Base> match(const Base& a, const Base& b);
+
+inline bool compatible(const Base& a, const Base& b) {
+  return match(a, b).size() > 0;
+}
 
 /** \brief Write a Base into a stream */
 std::ostream& operator<<(std::ostream& os, const Base& b);

@@ -44,6 +44,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <map>
 #include <utility>
 #include <vector>
@@ -149,6 +150,36 @@ double thinness(double val, const std::vector<double> &vec) {
   auto std_error = 2 * sqrt(6. / vec.size());
   return (dist_kurtosis(val, vec) + (2 * std_error)) / (4 + std_error);
 }
+
+Eigen::VectorXd normalise(const Eigen::VectorXd& values,
+                          double threshold) {
+  double sum = values.sum();
+
+  // counts values that would be below the threshold after normalization
+  unsigned under{};
+  double delta{};
+  for (auto i = 0U; i < values.rows(); ++i)
+    if (values[i] / sum < threshold) {
+      under++;
+      delta += (threshold - values[i] / sum);
+    }
+
+  Eigen::VectorXd res(4);
+
+  for (auto i = 0U; i < values.rows(); ++i) {
+    if (values[i] / sum - delta / (4 - under) < threshold)
+      res[i] = threshold;
+    else
+      res[i] = values[i] / sum - delta / (4 - under);
+  }
+
+  // Is there a way to do it in one step?
+  if (abs(res.sum() - 1) > 1e-10)
+    res = normalise(res, threshold);
+
+  return res;
+}
+
 
 }  // namespace statistics
 }  // namespace tools
